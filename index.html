@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+
+    <title>Tweet splitter</title>
+</head>
+
+<body>
+    <style>
+        body {
+            background-color: #444444;
+        }
+
+        textarea {
+            box-sizing: border-box;
+            border-radius: 10px;
+            border: 1px solid white;
+            width: 75%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            height: 200px;
+            background-color: #666666;
+            font-size: 15px;
+            color: white;
+        }
+
+        #tweets,
+        #tweetLen {
+            text-align: center;
+            font-size: 20px
+        }
+
+        br {
+            line-height: 50px;
+        }
+
+        button {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 30px;
+            height: 30px;
+            background-color: #666666;
+            border: none;
+            border-radius: 10px 10px 0px 0px;
+        }
+
+        button:active {
+            background-color: #555555;
+        }
+    </style>
+
+    <div id="tweetLen"></div>
+    <textarea id="tweet" placeholder="Your tweet"></textarea>
+    <br>
+    <div id="tweets"></div>
+
+    <script>
+        "use strict";
+
+        const tweetLen = document.getElementById("tweetLen");
+        const tweetInput = document.getElementById("tweet");
+        const tweets = document.getElementById("tweets");
+        const ellipsis = '…';
+        const maxTweetLen = 280;
+        const tweetSplitRegex = new RegExp(`(.{1,${maxTweetLen - ellipsis.length // Reserve space for the ellipsis
+            }})`, 'g');
+
+        function updateTweetLen(str) {
+            tweetLen.textContent = `${str.length}/${maxTweetLen}`;
+        }
+
+        updateTweetLen("");
+
+        tweetInput.oninput = function () {
+            const tweet = tweetInput.value;
+
+            updateTweetLen(tweet);
+
+            let parts = tweet.match(tweetSplitRegex);
+
+            if (parts) {
+                const parts_length = parts.length - 1;
+                parts = parts.map((part, index) => {
+                    if (index != parts_length) {
+                        // Trim and append the ellipsis
+                        return part.trim() + ellipsis;
+                    } else {
+                        // Don't mutate the last part
+                        return part;
+                    }
+                });
+
+                while (tweets.lastChild) {
+                    tweets.removeChild(tweets.lastChild);
+                }
+
+                for (const part of parts) {
+                    const clipboardButton = document.createElement("button");
+                    clipboardButton.textContent = '📋';
+                    clipboardButton.onclick = function () {
+                        navigator.clipboard.writeText(part);
+                    }
+
+                    const tweet = document.createElement("textarea");
+                    tweet.value = part;
+
+                    const br = document.createElement("br");
+
+                    tweets.appendChild(clipboardButton);
+                    tweets.appendChild(tweet);
+                    tweets.appendChild(br);
+                }
+            } else {
+                tweets.textContent = "Empty tweet";
+            }
+        }
+    </script>
+</body>
+
+</html>
